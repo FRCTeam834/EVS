@@ -1,18 +1,37 @@
 import time
 import edgeiq
+import pyfrc
+from networktables import NetworkTables
+import logging
 
 
 def main():
+
+    # Setup logging for the NetworkTables messages
+    logging.basicConfig(level=logging.DEBUG)
+
+    # Setup NetworkTables
+    NetworkTables.initialize(server = '10.8.34.2')
+
+    # Create table for values
+    val = NetworkTables.createTable('VisionValues')
+    sd = NetworkTables.getTable('SmartDashboard')
+
+    # Setup EdgeIQ
     obj_detect = edgeiq.ObjectDetection(
             "alwaysai/mobilenet_ssd")
     obj_detect.load(engine=edgeiq.Engine.DNN)
 
+    # Print out info
     print("Loaded model:\n{}\n".format(obj_detect.model_id))
     print("Engine: {}".format(obj_detect.engine))
     print("Accelerator: {}\n".format(obj_detect.accelerator))
     print("Labels:\n{}\n".format(obj_detect.labels))
 
+    # Get the FPS
     fps = edgeiq.FPS()
+
+    sd.putNumber('DB/String 5', .5)
 
     try:
         with edgeiq.WebcamVideoStream(cam=0) as video_stream, \
@@ -23,16 +42,31 @@ def main():
 
             # loop detection
             while True:
+
+                # Grab value for confidence from SmartDashboard
+                confidence_thres = val.getNumber('DB/String 5', .5)
+
                 frame = video_stream.read()
-                results = obj_detect.detect_objects(frame, confidence_level=.5)
+                results = obj_detect.detect_objects(frame, confidence_level = confidence_thres)
                 frame = edgeiq.markup_image(
                         frame, results.predictions, colors=obj_detect.colors)
+
+                # Update the VisionValues NetworkTable with new values
+                for prediction in results.predictions:
+                    val.putString('label', prediction.label)
+                    val.putNumber('center', prediction.center)
+                    val.putNumber('endX', prediction.end_x)
+                    val.putNumber('endY', prediction.end_y)
+                    val.putNumber('area', prediction.area)
+                    val.putNumber('conf', (prediction.confidence * 100))
+
 
                 # Generate text to display on streamer
                 text = ["Model: {}".format(obj_detect.model_id)]
                 text.append("Inference time: {:1.3f} s".format(results.duration))
                 text.append("Objects:")
 
+                # Format and display values on localhost streamer
                 for prediction in results.predictions:
                     text.append("{}: {:2.2f}%".format(
                         prediction.label, prediction.confidence * 100))
