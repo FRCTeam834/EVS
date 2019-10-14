@@ -4,6 +4,9 @@ import pyfrc
 from networktables import NetworkTables
 import logging
 
+# Constant for the default confidence (0 being 0% sure and 1 being 100% sure)
+default_conf_thres = .5
+
 
 def main():
 
@@ -31,7 +34,7 @@ def main():
     # Get the FPS
     fps = edgeiq.FPS()
 
-    sd.putNumber('DB/String 5', .5)
+    sd.putString('DB/String 5', .5)
 
     try:
         with edgeiq.WebcamVideoStream(cam=0) as video_stream, \
@@ -43,8 +46,15 @@ def main():
             # loop detection
             while True:
 
-                # Grab value for confidence from SmartDashboard
-                confidence_thres = val.getNumber('DB/String 5', .5)
+                # Grab value for confidence from SmartDashboard, if it can't, use default
+                confidence_thres = val.getString('DB/String 5', default_conf_thres)
+
+                try:
+                    # Try converting string to a float
+                    confidence_thres = float(confidence_thres)
+                except:
+                    # If that fails, set the confidence threshold to the default value
+                    confidence_thres = default_conf_thres
 
                 frame = video_stream.read()
                 results = obj_detect.detect_objects(frame, confidence_level = confidence_thres)
@@ -53,7 +63,7 @@ def main():
 
                 # Update the VisionValues NetworkTable with new values
                 for prediction in results.predictions:
-                    val.putString('label', prediction.label)
+                    val.putString(('label'+ prediction.index), prediction.label)
                     val.putNumber('center', prediction.center)
                     val.putNumber('endX', prediction.end_x)
                     val.putNumber('endY', prediction.end_y)
