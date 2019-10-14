@@ -34,7 +34,7 @@ def main():
     # Get the FPS
     fps = edgeiq.FPS()
 
-    sd.putString('DB/String 5', .5)
+    sd.putString('DB/String 5', default_conf_thres)
 
     try:
         with edgeiq.WebcamVideoStream(cam=0) as video_stream, \
