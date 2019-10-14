@@ -34,7 +34,7 @@ def main():
     # Get the FPS
     fps = edgeiq.FPS()
 
-    sd.putString('DB/String 5', default_conf_thres)
+    sd.putString('DB/String 3', default_conf_thres)
 
     try:
         with edgeiq.WebcamVideoStream(cam=0) as video_stream, \
@@ -47,7 +47,7 @@ def main():
             while True:
 
                 # Grab value for confidence from SmartDashboard, if it can't, use default
-                confidence_thres = val.getString('DB/String 5', default_conf_thres)
+                confidence_thres = val.getString('DB/String 3', default_conf_thres)
 
                 try:
                     # Try converting string to a float
@@ -63,12 +63,12 @@ def main():
 
                 # Update the VisionValues NetworkTable with new values
                 for prediction in results.predictions:
-                    val.putString(('label'+ prediction.index), prediction.label)
-                    val.putNumber('center', prediction.center)
-                    val.putNumber('endX', prediction.end_x)
-                    val.putNumber('endY', prediction.end_y)
-                    val.putNumber('area', prediction.area)
-                    val.putNumber('conf', (prediction.confidence * 100))
+                    val.putString((prediction.index + '_label') , prediction.label)
+                    val.putNumber((prediction.index + '_center'), prediction.center)
+                    val.putNumber((prediction.index + '_endX')  , prediction.end_x)
+                    val.putNumber((prediction.index + '_endY')  , prediction.end_y)
+                    val.putNumber((prediction.index + '_area')  , prediction.area)
+                    val.putNumber((prediction.index + 'conf')   , (prediction.confidence * 100))
 
 
                 # Generate text to display on streamer
