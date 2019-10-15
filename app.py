@@ -63,12 +63,12 @@ def main():
 
                 # Update the VisionValues NetworkTable with new values
                 for prediction in results.predictions:
-                    val.putString((prediction.index + '_label') , prediction.label)
-                    val.putNumber((prediction.index + '_center'), prediction.center)
-                    val.putNumber((prediction.index + '_endX')  , prediction.end_x)
-                    val.putNumber((prediction.index + '_endY')  , prediction.end_y)
-                    val.putNumber((prediction.index + '_area')  , prediction.area)
-                    val.putNumber((prediction.index + 'conf')   , (prediction.confidence * 100))
+                    val.putString((prediction.index + '.label') , prediction.label)
+                    val.putNumber((prediction.index + '.center'), prediction.center)
+                    val.putNumber((prediction.index + '.endX')  , prediction.end_x)
+                    val.putNumber((prediction.index + '.endY')  , prediction.end_y)
+                    val.putNumber((prediction.index + '.area')  , prediction.area)
+                    val.putNumber((prediction.index + '.conf')   , (prediction.confidence * 100))
 
 
                 # Generate text to display on streamer
