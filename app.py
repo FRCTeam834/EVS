@@ -7,6 +7,43 @@ import logging
 # Constant for the default confidence (0 being 0% sure and 1 being 100% sure)
 default_conf_thres = .5
 
+'''
+The idea for the organization was as follows:
+
+\ - table
+no character - variable
+
+\VisionValues
+    \Hatch0
+    \Hatch1
+    \Hatch2
+    \Hatch3
+    \Hatch4
+    \Ball0
+    \Ball1
+    \Ball2
+    \Ball3
+    \Ball4
+    \Tape0
+    ...
+    \Tape9
+    
+    update - boolean used to store if new values are available to the Rio.
+    
+    
+    Each of those subtables would have these values:
+    inUse
+    values
+    
+    Definitions:
+    inUse - boolean to specify if the RoboRio has to read the values for that table. Changes to 
+            true when the camera has that object in it. The Rio goes down the list, checking to 
+            see if that one is used and stops after it finds the first table not being used
+    values - an array that will store the values. Makes it easier to call and faster than having to
+             specify each one
+
+
+'''
 
 def main():
 
@@ -63,6 +100,7 @@ def main():
 
                 # Update the VisionValues NetworkTable with new values
                 for prediction in results.predictions:
+                    # Remove these; they are irrelevant; replace them with the NetworkTables code
                     val.putString((prediction.index + '.label') , prediction.label)
                     val.putNumber((prediction.index + '.center'), prediction.center)
                     val.putNumber((prediction.index + '.endX')  , prediction.end_x)
