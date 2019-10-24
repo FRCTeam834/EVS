@@ -7,43 +7,7 @@ import logging
 # Constant for the default confidence (0 being 0% sure and 1 being 100% sure)
 default_conf_thres = .5
 
-'''
-The idea for the organization was as follows:
-
-\ - table
-no character - variable
-
-\VisionValues
-    \Hatch0
-    \Hatch1
-    \Hatch2
-    \Hatch3
-    \Hatch4
-    \Ball0
-    \Ball1
-    \Ball2
-    \Ball3
-    \Ball4
-    \Tape0
-    ...
-    \Tape9
-    
-    update - boolean used to store if new values are available to the Rio.
-    
-    
-    Each of those subtables would have these values:
-    inUse
-    values
-    
-    Definitions:
-    inUse - boolean to specify if the RoboRio has to read the values for that table. Changes to 
-            true when the camera has that object in it. The Rio goes down the list, checking to 
-            see if that one is used and stops after it finds the first table not being used
-    values - an array that will store the values. Makes it easier to call and faster than having to
-             specify each one
-
-
-'''
+# TODO: Order the predictions in terms of priority (proximity?)
 
 def main():
 
@@ -57,7 +21,39 @@ def main():
     val = NetworkTables.createTable('VisionValues')
     sd = NetworkTables.getTable('SmartDashboard')
 
-    # Setup EdgeIQ
+    # Create sub-tables and append them to arrays: 3 for hatches, 3 for balls, and 6 for tape
+    hatchTables = []
+    ballTables = []
+    tapeTables = []
+
+    hatch1 = val.getSubTable('Hatch1')
+    hatchTables.append(hatch1)
+    hatch2 = val.getSubTable('Hatch2')
+    hatchTables.append(hatch2)
+    hatch3 = val.getSubTable('Hatch3')
+    hatchTables.append(hatch3)
+
+    ball1 = val.getSubTable('Ball1')
+    ballTables.append(ball1)
+    ball2 = val.getSubTable('Ball2')
+    ballTables.append(ball2)
+    ball3 = val.getSubTable('Ball3')
+    ballTables.append(ball3)
+    
+    tape1 = val.getSubTable('Tape1')
+    tapeTables.append(tape1)
+    tape2 = val.getSubTable('Tape2')
+    tapeTables.append(tape2)
+    tape3 = val.getSubTable('Tape3')
+    tapeTables.append(tape3)
+    tape4 = val.getSubTable('Tape4')
+    tapeTables.append(tape4)
+    tape5 = val.getSubTable('Tape5')
+    tapeTables.append(tape5)
+    tape6 = val.getSubTable('Tape6')
+    tapeTables.append(tape6)
+
+        # Setup EdgeIQ
     obj_detect = edgeiq.ObjectDetection(
             "alwaysai/mobilenet_ssd")
     obj_detect.load(engine=edgeiq.Engine.DNN)
@@ -98,15 +94,59 @@ def main():
                 frame = edgeiq.markup_image(
                         frame, results.predictions, colors=obj_detect.colors)
 
+                #Counters - they reset after every frame in the while loop
+                hatchCounter = 0
+                ballCounter = 0
+                tapeCounter = 0
+                                        
                 # Update the VisionValues NetworkTable with new values
-                for prediction in results.predictions:
-                    # Remove these; they are irrelevant; replace them with the NetworkTables code
+                for prediction in results.predictions:                                                                                                                        
+
+                    # Code goes here
+                    numValues = [prediction.center, prediction.end_x, prediction.end_y, prediction.area, (prediction.confidence*100)]
+                    
+                    #
+                    # IMPORTANT:
+                    # Names of labels have not been decided yet
+                    #
+                    #
+                    if prediction.label == "Hatch":
+                        # Do label separately because it is a string
+                        hatchTables[hatchCounter].putString((prediction.index + '.label'), prediction.label)
+
+                        hatchTables[hatchCounter].putNumberArray(prediction.index + '.values', numValues)
+                        # Boolean asks to update
+                        hatchTables[hatchCounter].putBoolean((prediction.index + '.update'), True)
+
+                        hatchCounter += 1
+                    if prediction.label == "Ball":
+                        # Do label separately because it is a string
+                        ballTables[ballCounter].putString((prediction.index + '.label'), prediction.label)
+
+                        ballTables[ballCounter].putNumberArray(prediction.index + '.values', numValues)
+                        # Boolean asks to update
+                        ballTables[ballCounter].putBoolean((prediction.index + '.update'), True)
+
+                        ballCounter += 1
+
+                    if prediction.label == "Tape":
+                        # Do label separately because it is a string
+                        tapeTables[tapeCounter].putString((prediction.index + '.label'), prediction.label)
+
+                        tapeTables[tapeCounter].putNumberArray(prediction.index + '.values', numValues)
+                        # Boolean asks to update
+                        tapeTables[tapeCounter].putBoolean((prediction.index + '.update'), True)
+
+                        tapeCounter += 1                      
+                                     
+                    """
                     val.putString((prediction.index + '.label') , prediction.label)
                     val.putNumber((prediction.index + '.center'), prediction.center)
                     val.putNumber((prediction.index + '.endX')  , prediction.end_x)
                     val.putNumber((prediction.index + '.endY')  , prediction.end_y)
                     val.putNumber((prediction.index + '.area')  , prediction.area)
                     val.putNumber((prediction.index + '.conf')   , (prediction.confidence * 100))
+                    """
 
 
                 # Generate text to display on streamer
