@@ -26,20 +26,22 @@ def main():
     ballTables = []
     tapeTables = []
 
+    hatch0 = val.getSubTable('Hatch0')
+    hatchTables.append(hatch0)
     hatch1 = val.getSubTable('Hatch1')
     hatchTables.append(hatch1)
     hatch2 = val.getSubTable('Hatch2')
     hatchTables.append(hatch2)
-    hatch3 = val.getSubTable('Hatch3')
-    hatchTables.append(hatch3)
 
+    ball0 = val.getSubTable('Ball0')
+    ballTables.append(ball0)
     ball1 = val.getSubTable('Ball1')
     ballTables.append(ball1)
     ball2 = val.getSubTable('Ball2')
     ballTables.append(ball2)
-    ball3 = val.getSubTable('Ball3')
-    ballTables.append(ball3)
     
+    tape0 = val.getSubTable('Tape0')
+    tapeTables.append(tape0)
     tape1 = val.getSubTable('Tape1')
     tapeTables.append(tape1)
     tape2 = val.getSubTable('Tape2')
@@ -50,8 +52,6 @@ def main():
     tapeTables.append(tape4)
     tape5 = val.getSubTable('Tape5')
     tapeTables.append(tape5)
-    tape6 = val.getSubTable('Tape6')
-    tapeTables.append(tape6)
 
         # Setup EdgeIQ
     obj_detect = edgeiq.ObjectDetection(
@@ -75,6 +75,12 @@ def main():
             # Allow Webcam to warm up
             time.sleep(2.0)
             fps.start()
+
+            for i in range(0,2):
+                hatchTables[i].putBoolean('inUse', False)
+                ballTables[i].putBoolean('inUse', False)
+                tapeTables[i].putBoolean('inUse', False)
+                tapeTables[i+3].putBoolean('inUse', False)
 
             # loop detection
             while True:
@@ -112,42 +118,38 @@ def main():
                     #
                     if prediction.label == "Hatch":
                         # Do label separately because it is a string
-                        hatchTables[hatchCounter].putString((prediction.index + '.label'), prediction.label)
+                        hatchTables[hatchCounter].putString('label', prediction.label)
 
-                        hatchTables[hatchCounter].putNumberArray(prediction.index + '.values', numValues)
+                        hatchTables[hatchCounter].putNumberArray('values', numValues)
                         # Boolean asks to update
-                        hatchTables[hatchCounter].putBoolean((prediction.index + '.update'), True)
+                        hatchTables[hatchCounter].putBoolean('inUse', True)
 
                         hatchCounter += 1
+
                     if prediction.label == "Ball":
                         # Do label separately because it is a string
-                        ballTables[ballCounter].putString((prediction.index + '.label'), prediction.label)
+                        ballTables[ballCounter].putString('label', prediction.label)
 
-                        ballTables[ballCounter].putNumberArray(prediction.index + '.values', numValues)
+                        ballTables[ballCounter].putNumberArray('values', numValues)
                         # Boolean asks to update
-                        ballTables[ballCounter].putBoolean((prediction.index + '.update'), True)
+                        ballTables[ballCounter].putBoolean('inUse', True)
 
                         ballCounter += 1
 
                     if prediction.label == "Tape":
                         # Do label separately because it is a string
-                        tapeTables[tapeCounter].putString((prediction.index + '.label'), prediction.label)
+                        tapeTables[tapeCounter].putString('label', prediction.label)
 
-                        tapeTables[tapeCounter].putNumberArray(prediction.index + '.values', numValues)
+                        tapeTables[tapeCounter].putNumberArray('values', numValues)
                         # Boolean asks to update
-                        tapeTables[tapeCounter].putBoolean((prediction.index + '.update'), True)
+                        tapeTables[tapeCounter].putBoolean('inUse', True)
 
                         tapeCounter += 1                      
-                                     
-                    """
-                    val.putString((prediction.index + '.label') , prediction.label)
-                    val.putNumber((prediction.index + '.center'), prediction.center)
-                    val.putNumber((prediction.index + '.endX')  , prediction.end_x)
-                    val.putNumber((prediction.index + '.endY')  , prediction.end_y)
-                    val.putNumber((prediction.index + '.area')  , prediction.area)
-                    val.putNumber((prediction.index + '.conf')   , (prediction.confidence * 100))
-                    """
 
+                # Sets the value after the last value to false. The Rio will stop when it finds a False
+                hatchTables[hatchCounter].putBoolean('inUse', False)
+                ballTables[ballCounter].putBoolean('inUse', False)
+                tapeTables[tapeCounter].putBoolean('inUse', False)
 
                 # Generate text to display on streamer
                 text = ["Model: {}".format(obj_detect.model_id)]
