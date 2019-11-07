@@ -18,7 +18,7 @@ def main():
     NetworkTables.initialize(server = '10.8.34.2')
 
     # Create table for values
-    val = NetworkTables.createTable('VisionValues')
+    val = NetworkTables.getTable('VisionValues')
     sd = NetworkTables.getTable('SmartDashboard')
 
     # Create sub-tables and append them to arrays: 3 for hatches, 3 for balls, and 6 for tape
@@ -56,7 +56,7 @@ def main():
         # Setup EdgeIQ
     obj_detect = edgeiq.ObjectDetection(
             "alwaysai/mobilenet_ssd")
-    obj_detect.load(engine=edgeiq.Engine.DNN)
+    obj_detect.load(engine=edgeiq.Engine.DNN_OPENVINO)
 
     # Print out info
     print("Loaded model:\n{}\n".format(obj_detect.model_id))
@@ -109,7 +109,7 @@ def main():
                 for prediction in results.predictions:                                                                                                                        
 
                     # Code goes here
-                    numValues = [prediction.center, prediction.end_x, prediction.end_y, prediction.area, (prediction.confidence*100)]
+                    numValues = [prediction.box.center, prediction.box.end_x, prediction.box.end_y, prediction.box.area, (prediction.confidence*100)]
                     
                     #
                     # IMPORTANT:

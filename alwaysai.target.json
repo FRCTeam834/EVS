@@ -1,6 +1,0 @@
-{
-  "targetProtocol": "ssh+docker:",
-  "targetHostname": "pi@10.8.34.15",
-  "targetPath": "alwaysai/Coprocessor-Vision",
-  "dockerImageId": "alwaysai/edgeiq:latest"
-}
