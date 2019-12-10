@@ -67,6 +67,9 @@ class PostProc(multiprocessing.Process):
         while True:
             results = self._results_queue.get()
 
+            if isinstance(results, str) and results == 'stop':
+                break
+
             #Counters - they reset after every frame in the while loop
             hatchCounter = 0
             ballCounter = 0
@@ -157,7 +160,7 @@ def main():
             fps.start()
 
             # loop detection
-            for i in range(1000):
+            while True:
                 confidence_thres = default_conf_thres
 
                 frame = video_stream.read()
@@ -190,6 +193,8 @@ def main():
         print("approx. FPS: {:.2f}".format(fps.compute_fps()))
 
         print("Program Ending")
+        results_queue.put('stop')
+        post_proc.join()
 
 
 if __name__ == "__main__":
