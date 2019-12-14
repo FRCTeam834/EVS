@@ -6,7 +6,7 @@ import logging
 import numpy as np
 
 # Constant for the default confidence (0 being 0% sure and 1 being 100% sure)
-default_conf_thres = .75
+default_conf_thres = .5
 
 # TODO: Order the predictions in terms of priority (proximity?)
 
@@ -58,7 +58,7 @@ def main():
 
         # Setup EdgeIQ
     obj_detect = edgeiq.ObjectDetection(
-            "alwaysai/mobilenet_ssd")
+            "CAP1Sup/2019_FRC_GamePieces_Dev_v3") # Other model: CAP1Sup/2019_FRC_GamePieces_Dev
     obj_detect.load(engine=edgeiq.Engine.DNN_OPENVINO)
 
     # Print out info
@@ -69,11 +69,16 @@ def main():
 
     # Get the FPS
     fps = edgeiq.FPS()
+    tracker = edgeiq.CentroidTracker()
 
     # sd.putString('DB/String 3', default_conf_thres)
 
     try:
         with edgeiq.WebcamVideoStream(cam=0) as video_stream:
+            '''
+        with edgeiq.WebcamVideoStream(cam=0) as video_stream, \\
+                edgeiq.Streamer() as streamer:
+            '''
             # Allow Webcam to warm up
             time.sleep(2.0)
             fps.start()
@@ -90,6 +95,10 @@ def main():
 
                 frame = video_stream.read()
                 results = obj_detect.detect_objects(frame, confidence_level = confidence_thres)
+
+                tracked_objects = tracker.update(results)
+                
+
                 #frame = edgeiq.markup_image(
                 #        frame, results.predictions, colors=obj_detect.colors)
 
@@ -99,7 +108,7 @@ def main():
                 tapeCounter = 0
                                         
                 # Update the EVS NetworkTable with new values
-                for prediction in results.predictions:                                                                                                                        
+                for prediction in tracked_objects:                                                                                                                        
 
                     center_x, center_y = prediction.box.center
                     # Code goes here
@@ -115,7 +124,7 @@ def main():
                     # Names of labels have not been decided yet
                     #
                     #
-                    if prediction.label == "train": # Hatches = trains
+                    if prediction.label == "Hatch":
                     
                         hatchTables[hatchCounter].putNumberArray('values', numValuesArray)
                         # Boolean asks to update
@@ -123,14 +132,14 @@ def main():
 
                         hatchCounter += 1
 
-                    elif prediction.label == "car": # Balls = cars 
+                    elif prediction.label == "Ball":
 
                         ballTables[ballCounter].putNumberArray('values', numValuesArray)
                         # Boolean asks to update
                         ballTables[ballCounter].putBoolean('inUse', True)
                         ballCounter += 1
 
-                    elif prediction.label == "person": # Tape = people
+                    elif prediction.label == "Tape":
 
                         tapeTables[tapeCounter].putNumberArray('values', numValuesArray)
                         # Boolean asks to update
@@ -162,6 +171,7 @@ def main():
                 if streamer.check_exit():
                     break
                 '''
+                
     finally:
         fps.stop()
         print("elapsed time: {:.2f}".format(fps.get_elapsed_seconds()))
