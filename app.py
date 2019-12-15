@@ -8,13 +8,11 @@ import numpy as np
 # Constant for the default confidence (0 being 0% sure and 1 being 100% sure)
 default_conf_thres = .5
 
-# TODO: Order the predictions in terms of priority (proximity?)
-
 def main():
     # Allow Rio to boot and configure network
     time.sleep(5.0)
 
-    # Setup logging for the NetworkTables messages
+    # Setup logging
     logging.basicConfig(level=logging.DEBUG)
 
     # Setup NetworkTables
@@ -56,9 +54,9 @@ def main():
     tape5 = evs.getSubTable('Tape5')
     tapeTables.append(tape5)
 
-        # Setup EdgeIQ
+    # Setup EdgeIQ
     obj_detect = edgeiq.ObjectDetection(
-            "CAP1Sup/2019_FRC_GamePieces_Dev_v3") # Other model: CAP1Sup/2019_FRC_GamePieces_Dev
+            "CAP1Sup/2019_FRC_GamePieces_Dev_v3")
     obj_detect.load(engine=edgeiq.Engine.DNN_OPENVINO)
 
     # Print out info
@@ -75,10 +73,7 @@ def main():
 
     try:
         with edgeiq.WebcamVideoStream(cam=0) as video_stream:
-            '''
-        with edgeiq.WebcamVideoStream(cam=0) as video_stream, \\
-                edgeiq.Streamer() as streamer:
-            '''
+
             # Allow Webcam to warm up
             time.sleep(2.0)
             fps.start()
@@ -97,10 +92,7 @@ def main():
                 results = obj_detect.detect_objects(frame, confidence_level = confidence_thres)
 
                 tracked_objects = tracker.update(results)
-                
 
-                #frame = edgeiq.markup_image(
-                #        frame, results.predictions, colors=obj_detect.colors)
 
                 #Counters - they reset after every frame in the while loop
                 hatchCounter = 0
