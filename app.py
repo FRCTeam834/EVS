@@ -67,7 +67,8 @@ def main():
 
     # Get the FPS
     fps = edgeiq.FPS()
-    tracker = edgeiq.CentroidTracker()
+    #cross_frame_tracker = edgeiq.CorrelationTracker()
+    #tracker = edgeiq.CentroidTracker()
 
     # sd.putString('DB/String 3', default_conf_thres)
 
@@ -91,17 +92,20 @@ def main():
                 frame = video_stream.read()
                 results = obj_detect.detect_objects(frame, confidence_level = confidence_thres)
 
-                tracked_objects = tracker.update(results)
-
+                #objects = tracker.update(results.predictions)
+                '''
+                frame = edgeiq.markup_image(
+                        frame, results.predictions, colors=obj_detect.colors)
+                '''
 
                 #Counters - they reset after every frame in the while loop
                 hatchCounter = 0
                 ballCounter = 0
                 tapeCounter = 0
-                                        
-                # Update the EVS NetworkTable with new values
-                for prediction in tracked_objects:                                                                                                                        
 
+                # Update the EVS NetworkTable with new values
+                for prediction in results.predictions:
+ 
                     center_x, center_y = prediction.box.center
                     # Code goes here
                     numValues = [center_x, center_y, prediction.box.end_x, prediction.box.end_y, prediction.box.area, (prediction.confidence * 100)]
@@ -145,7 +149,8 @@ def main():
                 tapeTables[tapeCounter].putBoolean('inUse', False)
 
                 evs.putBoolean('checked', False)
-                '''
+
+                
                 # Generate text to display on streamer
                 text = ["Model: {}".format(obj_detect.model_id)]
                 text.append("Inference time: {:1.3f} s".format(results.duration))
@@ -155,7 +160,7 @@ def main():
                 for prediction in results.predictions:
                     text.append("{}: {:2.2f}%".format(
                         prediction.label, prediction.confidence * 100))
-
+                '''
                 streamer.send_data(frame, text)
                 '''
                 fps.update()
