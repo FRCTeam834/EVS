@@ -23,18 +23,4 @@ As with any project, a few items are needed
 4. An Ethernet cable to connect the coprocessor (#1) to the robot's radio
 5. A USB webcam
 6. Java - based RoboRio code
-7. (Optional) A Intel Neural Compute Stick 2. This can be used to obtain higher frame rates.
-
-## Setup
-This is the standard implementation of the EVS system. It uses a Raspberry Pi as the coprocessor. Further options for more advanced users can be found in the improvements section.
-1. Linux installation onto a RasPi (Raspberry Pi)
-  - Download the RasPi image from the Dropbox link. Extract the .zip once it finishes.
-  - Install the burning software of your choice. Our team uses [Win32 Disk Imager.](https://sourceforge.net/projects/win32diskimager/)
-  - Insert your micro SD card into your computer
-  - Open File Explorer (Windows) or Finder (Mac) to ensure that your SD card appears. Make sure to remember the letter before the name of the drive (ex. E:)
-  - Launch the burning software, in this example Win32 Disk Imager, and click the folder icon to select the .iso file that was extracted from the image download. Then select the letter of your drive under devices, and click write. This will take a while.
-  - Connect the RasPi with an Ethernet cable to the radio of your robot.
-
-
-
-
+7. (Optional) A Intel Neural Compute Stick 2. This can be used to obtain higher frame rates
