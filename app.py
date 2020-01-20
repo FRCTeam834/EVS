@@ -65,6 +65,9 @@ def main():
     print("Accelerator: {}\n".format(obj_detect.accelerator))
     print("Labels:\n{}\n".format(obj_detect.labels))
 
+    centroid_tracker = edgeiq.CentroidTracker(
+            deregister_frames=20, max_distance=50)
+
     # Get the FPS
     fps = edgeiq.FPS()
     #cross_frame_tracker = edgeiq.CorrelationTracker()
@@ -92,7 +95,8 @@ def main():
                 frame = video_stream.read()
                 results = obj_detect.detect_objects(frame, confidence_level = confidence_thres)
 
-                #objects = tracker.update(results.predictions)
+                objects = centroid_tracker.update(results.predictions)
+
                 '''
                 frame = edgeiq.markup_image(
                         frame, results.predictions, colors=obj_detect.colors)
@@ -104,22 +108,17 @@ def main():
                 tapeCounter = 0
 
                 # Update the EVS NetworkTable with new values
-                for prediction in results.predictions:
+                for (object_id, prediction) in objects.items():
  
                     center_x, center_y = prediction.box.center
                     # Code goes here
-                    numValues = [center_x, center_y, prediction.box.end_x, prediction.box.end_y, prediction.box.area, (prediction.confidence * 100)]
+                    numValues = [object_id, center_x, center_y, prediction.box.end_x, prediction.box.end_y, prediction.box.area, (prediction.confidence * 100)]
                     
                     for entry in range(0, len(numValues) - 1):
                         numValues[entry] = round(numValues[entry], 3)
 
                     numValuesArray = np.asarray(numValues)
-                    
-                    #
-                    # IMPORTANT:
-                    # Names of labels have not been decided yet
-                    #
-                    #
+
                     if prediction.label == "Hatch":
                     
                         hatchTables[hatchCounter].putNumberArray('values', numValuesArray)
@@ -133,6 +132,7 @@ def main():
                         ballTables[ballCounter].putNumberArray('values', numValuesArray)
                         # Boolean asks to update
                         ballTables[ballCounter].putBoolean('inUse', True)
+
                         ballCounter += 1
 
                     elif prediction.label == "Tape":
